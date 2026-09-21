@@ -1,0 +1,4 @@
+[package]
+name = "fixture-dep"
+version = "2.0.0"
+license = "MIT/Apache-2.0"

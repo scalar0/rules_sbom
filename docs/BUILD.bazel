@@ -1,0 +1,71 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+bzl_library(
+    name = "settings",
+    srcs = ["//private:settings.bzl"],
+)
+
+bzl_library(
+    name = "releases",
+    srcs = ["//private:releases.bzl"],
+)
+
+bzl_library(
+    name = "rules_sources",
+    srcs = [
+        "//:defs.bzl",
+        "//private:rules.bzl",
+    ],
+    deps = [
+        ":settings",
+        "@jq.bzl//jq/toolchain:toolchain",
+    ],
+)
+
+bzl_library(
+    name = "http_sources",
+    srcs = [
+        "@bazel_tools//tools/build_defs/repo:cache.bzl",
+        "@bazel_tools//tools/build_defs/repo:git.bzl",
+        "@bazel_tools//tools/build_defs/repo:git_worker.bzl",
+        "@bazel_tools//tools/build_defs/repo:http.bzl",
+        "@bazel_tools//tools/build_defs/repo:utils.bzl",
+    ],
+)
+
+bzl_library(
+    name = "cargo_sources",
+    srcs = ["//private:cargo.bzl"],
+    deps = [
+        ":http_sources",
+        "@toml.bzl//:toml",
+    ],
+)
+
+stardoc(
+    name = "rules",
+    out = "generated/rules.md",
+    input = "//:defs.bzl",
+    symbol_names = ["sbom"],
+    deps = [":rules_sources"],
+)
+
+stardoc(
+    name = "toolchains",
+    out = "generated/toolchains.md",
+    input = "//toolchains:toolchain.bzl",
+    symbol_names = ["syft_toolchain"],
+    deps = [":releases"],
+)
+
+stardoc(
+    name = "extensions",
+    out = "generated/extensions.md",
+    input = "//:extensions.bzl",
+    deps = [
+        ":cargo_sources",
+        ":http_sources",
+        ":releases",
+    ],
+)

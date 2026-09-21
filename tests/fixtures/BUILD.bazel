@@ -1,0 +1,13 @@
+package(default_visibility = ["//tests:__subpackages__"])
+
+exports_files([
+    "Cargo.lock",
+    "empty.lock",
+    "package-lock.json",
+])
+
+exports_files([
+    "config.yaml",
+    "exclude.yaml",
+    "legacy.yaml",
+])

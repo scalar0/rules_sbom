@@ -1,0 +1,6 @@
+version = 4
+
+[[package]]
+name = "fixture-dep"
+version = "2.0.0"
+source = "git+https://example.invalid/source?branch=main#bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"

@@ -1,0 +1,20 @@
+load("@rules_sbom//:defs.bzl", "sbom")
+
+sbom(
+    name = "sbom",
+    formats = [
+        "syft-json",
+        "spdx-json@3.0",
+        "cyclonedx-json",
+    ],
+    lockfiles = [
+        "Cargo.lock",
+        "package-lock.json",
+    ],
+)
+
+filegroup(
+    name = "spdx",
+    srcs = [":sbom"],
+    output_group = "spdx-json@3.0",
+)

@@ -1,0 +1,14 @@
+module(name = "sbom_example")
+
+cargo = use_extension("@rules_sbom//:extensions.bzl", "cargo")
+cargo.from_lockfiles(
+    name = "cargo_licenses",
+    lockfiles = ["//enriched:Cargo.lock"],
+)
+use_repo(cargo, "cargo_licenses")
+
+bazel_dep(name = "rules_sbom", version = "0.1.0")
+local_path_override(
+    module_name = "rules_sbom",
+    path = "../..",
+)

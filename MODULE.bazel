@@ -1,0 +1,55 @@
+module(
+    name = "rules_sbom",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "platforms", version = "1.1.0")
+
+bazel_dep(name = "bazel_skylib", version = "1.9.2", dev_dependency = True)
+
+bazel_dep(name = "jq.bzl", version = "0.6.1")
+bazel_dep(name = "toml.bzl", version = "0.4.1")
+bazel_dep(name = "rules_python", version = "2.3.3")
+
+bazel_dep(name = "rules_uv", version = "0.89.2", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
+
+syft = use_extension("//:extensions.bzl", "syft")
+use_repo(syft, "syft_darwin_amd64", "syft_darwin_arm64", "syft_linux_amd64", "syft_linux_arm64")
+
+register_toolchains("//toolchains:all")
+
+jq = use_extension("@jq.bzl//jq:extensions.bzl", "toolchains")
+use_repo(jq, "jq_toolchains")
+
+register_toolchains(
+    "@jq_toolchains//:all",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.14.4")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "cargo_license_deps",
+    python_version = "3.14.4",
+    requirements_lock = "//private:requirements.txt",
+    target_platforms = [
+        "linux_x86_64",
+        "linux_aarch64",
+        "osx_x86_64",
+        "osx_aarch64",
+    ],
+)
+use_repo(pip, "cargo_license_deps")
+
+cargo_fixtures = use_extension("//tests:repositories.bzl", "fixtures", dev_dependency = True)
+use_repo(cargo_fixtures, "cargo_fixture_licenses")
+
+local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+
+local_repository(
+    name = "sbom_test_inputs",
+    dev_dependency = True,
+    path = "tests/external",
+)

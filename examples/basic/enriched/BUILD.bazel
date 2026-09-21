@@ -1,0 +1,10 @@
+load("@rules_sbom//:defs.bzl", "sbom")
+
+exports_files(["Cargo.lock"])
+
+sbom(
+    name = "sbom",
+    cargo_licenses = ["@cargo_licenses//:licenses"],
+    formats = ["spdx-json@3.0"],
+    lockfiles = ["Cargo.lock"],
+)

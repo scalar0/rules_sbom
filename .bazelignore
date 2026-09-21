@@ -1,0 +1,3 @@
+examples/basic
+.venv
+tests/external

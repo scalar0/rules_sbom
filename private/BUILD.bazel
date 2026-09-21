@@ -1,0 +1,30 @@
+load("@cargo_license_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+package(default_visibility = ["//:__subpackages__"])
+
+py_binary(
+    name = "validate_licenses",
+    srcs = ["validate_licenses.py"],
+    legacy_create_init = False,
+    python_version = "3.14",
+    deps = [requirement("packaging")],
+)
+
+py_library(
+    name = "license_validation",
+    srcs = ["validate_licenses.py"],
+    deps = [requirement("packaging")],
+)
+
+exports_files([
+    "releases.bzl",
+    "rules.bzl",
+    "scan.sh",
+    "settings.bzl",
+    "cargo.bzl",
+    "license_metadata.bzl",
+    "enrich.jq",
+    "requirements.txt",
+    "requirements.in",
+])

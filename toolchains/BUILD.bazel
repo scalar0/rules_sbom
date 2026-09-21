@@ -1,0 +1,9 @@
+load(":toolchain.bzl", "release_toolchains")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["toolchain.bzl"])
+
+toolchain_type(name = "type")
+
+release_toolchains(name = "syft")

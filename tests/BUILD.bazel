@@ -1,0 +1,267 @@
+load("@rules_python//python:defs.bzl", "py_test")
+load("//:defs.bzl", "sbom")
+load("//toolchains:toolchain.bzl", "syft_toolchain")
+load(":analysis_tests.bzl", "analysis_tests")
+load(":testing.bzl", "directory", "jq_script_test", "json_test", "script_tool")
+
+jq_script_test(
+    name = "enrichment_filter_test",
+    data = [
+        "//private:enrich.jq",
+        "@cargo_fixture_licenses//:licenses",
+    ],
+    script = "enrichment_filter.sh",
+)
+
+py_test(
+    name = "validate_licenses_test",
+    srcs = ["validate_licenses_test.py"],
+    legacy_create_init = False,
+    python_version = "3.14",
+    deps = ["//private:license_validation"],
+)
+
+sbom(
+    name = "enriched",
+    cargo_licenses = ["@cargo_fixture_licenses//:licenses"],
+    formats = [
+        "syft-json",
+        "cyclonedx-json",
+        "spdx-json@3.0",
+    ],
+    lockfiles = [
+        "//tests/fixtures:Cargo.lock",
+        "//tests/fixtures/git:Cargo.lock",
+    ],
+)
+
+filegroup(
+    name = "enriched_syft",
+    srcs = [":enriched"],
+    output_group = "syft-json",
+)
+
+filegroup(
+    name = "enriched_cdx",
+    srcs = [":enriched"],
+    output_group = "cyclonedx-json",
+)
+
+filegroup(
+    name = "enriched_spdx",
+    srcs = [":enriched"],
+    output_group = "spdx-json@3.0",
+)
+
+json_test(
+    name = "enriched_test",
+    srcs = [
+        ":enriched_cdx",
+        ":enriched_spdx",
+        ":enriched_syft",
+    ],
+    filter = "enriched.jq",
+)
+
+sbom(
+    name = "enriched_configured",
+    cargo_licenses = ["@cargo_fixture_licenses//:licenses"],
+    config = "//tests/fixtures:config.yaml",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+)
+
+sbom(
+    name = "enriched_legacy",
+    cargo_licenses = ["@cargo_fixture_licenses//:licenses"],
+    config = "//tests/fixtures:legacy.yaml",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+)
+
+json_test(
+    name = "enriched_configuration_test",
+    srcs = [
+        ":enriched_configured",
+        ":enriched_legacy",
+    ],
+    filter = "enriched_configuration.jq",
+)
+
+sbom(
+    name = "combined",
+    formats = [
+        "syft-json",
+        "spdx-json@3.0",
+        "cyclonedx-json",
+    ],
+    lockfiles = [
+        "//tests/fixtures:Cargo.lock",
+        "//tests/fixtures:package-lock.json",
+    ],
+)
+
+filegroup(
+    name = "syft",
+    srcs = [":combined"],
+    output_group = "syft-json",
+)
+
+filegroup(
+    name = "spdx",
+    srcs = [":combined"],
+    output_group = "spdx-json@3.0",
+)
+
+filegroup(
+    name = "cyclonedx",
+    srcs = [":combined"],
+    output_group = "cyclonedx-json",
+)
+
+json_test(
+    name = "combined_test",
+    srcs = [
+        ":cyclonedx",
+        ":spdx",
+        ":syft",
+    ],
+    filter = "combined.jq",
+)
+
+sbom(
+    name = "configured",
+    config = "//tests/fixtures:config.yaml",
+    formats = ["syft-json"],
+    lockfiles = [
+        "//tests/fixtures:Cargo.lock",
+        "//tests/fixtures:package-lock.json",
+    ],
+)
+
+json_test(
+    name = "configured_test",
+    srcs = [":configured"],
+    filter = "configured.jq",
+)
+
+genrule(
+    name = "generated_lockfile",
+    srcs = ["//tests/fixtures:Cargo.lock"],
+    outs = ["generated/Cargo.lock"],
+    cmd = 'cp "$(location //tests/fixtures:Cargo.lock)" "$@"',
+)
+
+sbom(
+    name = "generated",
+    formats = ["syft-json"],
+    lockfiles = [":generated_lockfile"],
+)
+
+sbom(
+    name = "external",
+    formats = ["syft-json"],
+    lockfiles = [
+        "//tests/fixtures:Cargo.lock",
+        "@sbom_test_inputs//:Cargo.lock",
+    ],
+)
+
+sbom(
+    name = "empty",
+    formats = ["syft-json"],
+    lockfiles = [":empty_lockfile"],
+)
+
+genrule(
+    name = "empty_lockfile",
+    srcs = ["//tests/fixtures:empty.lock"],
+    outs = ["empty/Cargo.lock"],
+    cmd = 'cp "$(location //tests/fixtures:empty.lock)" "$@"',
+)
+
+sbom(
+    name = "excluded",
+    config = "//tests/fixtures:exclude.yaml",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+)
+
+json_test(
+    name = "isolation_test",
+    srcs = [
+        ":empty",
+        ":excluded",
+        ":external",
+        ":generated",
+    ],
+    filter = "isolation.jq",
+)
+
+filegroup(
+    name = "cargo_alias",
+    srcs = ["//tests/fixtures:Cargo.lock"],
+)
+
+filegroup(
+    name = "two_files",
+    srcs = [
+        "//tests/fixtures:Cargo.lock",
+        "//tests/fixtures:package-lock.json",
+    ],
+)
+
+directory(
+    name = "directory",
+    tags = ["manual"],
+)
+
+sbom(
+    name = "unsupported_format",
+    formats = ["not-a-syft-format"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+    tags = ["manual"],
+)
+
+analysis_tests(name = "analysis_tests")
+
+script_tool(
+    name = "fake_syft",
+    src = "fake_syft.sh",
+    data = ["toolchain-marker.txt"],
+    tags = ["manual"],
+)
+
+syft_toolchain(
+    name = "fake_implementation",
+    syft = ":fake_syft",
+    tags = ["manual"],
+)
+
+toolchain(
+    name = "fake_toolchain",
+    tags = ["manual"],
+    toolchain = ":fake_implementation",
+    toolchain_type = "//toolchains:type",
+)
+
+sbom(
+    name = "override",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+    tags = ["manual"],
+)
+
+json_test(
+    name = "override_test",
+    srcs = [":override"],
+    filter = "override.jq",
+    tags = ["manual"],
+)
+
+sbom(
+    name = "failure",
+    formats = ["failure"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+    tags = ["manual"],
+)

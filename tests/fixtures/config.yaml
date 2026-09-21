@@ -1,0 +1,30 @@
+source:
+  name: configured-inventory
+  base-path: /outside
+from: [docker]
+output: [syft-json=/outside/document.json]
+check-for-app-update: true
+enrich: [all]
+golang:
+  search-remote-licenses: true
+  search-local-mod-cache-licenses: true
+  search-local-vendor-licenses: true
+  use-packages-lib: true
+javascript:
+  search-remote-licenses: true
+python:
+  search-remote-licenses: true
+java:
+  use-network: true
+  use-maven-local-repository: true
+  resolve-transitive-dependencies: true
+cache:
+  dir: /outside/cache
+  ttl: 24h
+log:
+  file: /outside/log
+dev:
+  profile: cpu
+format:
+  template:
+    path: /outside/template

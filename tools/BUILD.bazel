@@ -1,0 +1,7 @@
+load("@rules_uv//uv:pip.bzl", "pip_compile")
+
+pip_compile(
+    name = "requirements",
+    requirements_in = "//private:requirements.in",
+    requirements_txt = "//private:requirements.txt",
+)
