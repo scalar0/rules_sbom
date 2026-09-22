@@ -1,5 +1,5 @@
 source:
-  name: enriched-legacy
+    name: enriched-legacy
 format:
-  json:
-    legacy: true
+    json:
+        legacy: true

@@ -1,2 +1,2 @@
 exclude:
-  - '**/Cargo.lock'
+    - '**/Cargo.lock'

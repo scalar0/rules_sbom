@@ -17,10 +17,7 @@ Register it with the //toolchains:type toolchain type.
 
 **ATTRIBUTES**
 
-
-| Name  | Description | Type | Mandatory | Default |
-| :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="syft_toolchain-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="syft_toolchain-syft"></a>syft |  Syft executable compatible with the rule's CLI and configuration controls.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
-
-
+| Name                                 | Description                                                                | Type                                                                | Mandatory | Default |
+| :----------------------------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------ | :-------- | :------ |
+| <a id="syft_toolchain-name"></a>name | A unique name for this target.                                             | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required  |         |
+| <a id="syft_toolchain-syft"></a>syft | Syft executable compatible with the rule's CLI and configuration controls. | <a href="https://bazel.build/concepts/labels">Label</a>             | required  |         |
