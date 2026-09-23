@@ -10,7 +10,12 @@ def _syft_impl(module_ctx):
     for platform, release in SYFT_RELEASES.items():
         http_archive(
             name = "syft_" + platform,
-            urls = ["https://github.com/anchore/syft/releases/download/v{0}/syft_{0}_{1}.tar.gz".format(SYFT_VERSION, platform)],
+            urls = [
+                "https://github.com/anchore/syft/releases/download/v{0}/syft_{0}_{1}.tar.gz".format(
+                    SYFT_VERSION,
+                    platform,
+                ),
+            ],
             sha256 = release.sha256,
             build_file_content = 'exports_files(["syft"], visibility = ["//visibility:public"])\n',
         )

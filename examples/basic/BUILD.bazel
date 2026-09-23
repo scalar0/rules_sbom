@@ -1,5 +1,11 @@
 load("@rules_sbom//:defs.bzl", "sbom")
 
+filegroup(
+    name = "spdx",
+    srcs = [":sbom"],
+    output_group = "spdx-json@3.0",
+)
+
 sbom(
     name = "sbom",
     formats = [
@@ -11,10 +17,4 @@ sbom(
         "Cargo.lock",
         "package-lock.json",
     ],
-)
-
-filegroup(
-    name = "spdx",
-    srcs = [":sbom"],
-    output_group = "spdx-json@3.0",
 )

@@ -4,6 +4,55 @@ load("//toolchains:toolchain.bzl", "syft_toolchain")
 load(":analysis_tests.bzl", "analysis_tests")
 load(":testing.bzl", "directory", "jq_script_test", "json_test", "script_tool")
 
+filegroup(
+    name = "enriched_syft",
+    srcs = [":enriched"],
+    output_group = "syft-json",
+)
+
+filegroup(
+    name = "enriched_cdx",
+    srcs = [":enriched"],
+    output_group = "cyclonedx-json",
+)
+
+filegroup(
+    name = "enriched_spdx",
+    srcs = [":enriched"],
+    output_group = "spdx-json@3.0",
+)
+
+filegroup(
+    name = "syft",
+    srcs = [":combined"],
+    output_group = "syft-json",
+)
+
+filegroup(
+    name = "spdx",
+    srcs = [":combined"],
+    output_group = "spdx-json@3.0",
+)
+
+filegroup(
+    name = "cyclonedx",
+    srcs = [":combined"],
+    output_group = "cyclonedx-json",
+)
+
+filegroup(
+    name = "cargo_alias",
+    srcs = ["//tests/fixtures:Cargo.lock"],
+)
+
+filegroup(
+    name = "two_files",
+    srcs = [
+        "//tests/fixtures:Cargo.lock",
+        "//tests/fixtures:package-lock.json",
+    ],
+)
+
 jq_script_test(
     name = "enrichment_filter_test",
     data = [
@@ -33,24 +82,6 @@ sbom(
         "//tests/fixtures:Cargo.lock",
         "//tests/fixtures/git:Cargo.lock",
     ],
-)
-
-filegroup(
-    name = "enriched_syft",
-    srcs = [":enriched"],
-    output_group = "syft-json",
-)
-
-filegroup(
-    name = "enriched_cdx",
-    srcs = [":enriched"],
-    output_group = "cyclonedx-json",
-)
-
-filegroup(
-    name = "enriched_spdx",
-    srcs = [":enriched"],
-    output_group = "spdx-json@3.0",
 )
 
 json_test(
@@ -99,24 +130,6 @@ sbom(
         "//tests/fixtures:Cargo.lock",
         "//tests/fixtures:package-lock.json",
     ],
-)
-
-filegroup(
-    name = "syft",
-    srcs = [":combined"],
-    output_group = "syft-json",
-)
-
-filegroup(
-    name = "spdx",
-    srcs = [":combined"],
-    output_group = "spdx-json@3.0",
-)
-
-filegroup(
-    name = "cyclonedx",
-    srcs = [":combined"],
-    output_group = "cyclonedx-json",
 )
 
 json_test(
@@ -196,19 +209,6 @@ json_test(
         ":generated",
     ],
     filter = "isolation.jq",
-)
-
-filegroup(
-    name = "cargo_alias",
-    srcs = ["//tests/fixtures:Cargo.lock"],
-)
-
-filegroup(
-    name = "two_files",
-    srcs = [
-        "//tests/fixtures:Cargo.lock",
-        "//tests/fixtures:package-lock.json",
-    ],
 )
 
 directory(

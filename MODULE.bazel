@@ -15,7 +15,13 @@ bazel_dep(name = "rules_uv", version = "0.89.2", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 
 syft = use_extension("//:extensions.bzl", "syft")
-use_repo(syft, "syft_darwin_amd64", "syft_darwin_arm64", "syft_linux_amd64", "syft_linux_arm64")
+use_repo(
+    syft,
+    "syft_darwin_amd64",
+    "syft_darwin_arm64",
+    "syft_linux_amd64",
+    "syft_linux_arm64",
+)
 
 register_toolchains("//toolchains:all")
 
@@ -43,10 +49,17 @@ pip.parse(
 )
 use_repo(pip, "cargo_license_deps")
 
-cargo_fixtures = use_extension("//tests:repositories.bzl", "fixtures", dev_dependency = True)
+cargo_fixtures = use_extension(
+    "//tests:repositories.bzl",
+    "fixtures",
+    dev_dependency = True,
+)
 use_repo(cargo_fixtures, "cargo_fixture_licenses")
 
-local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+local_repository = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:local.bzl",
+    "local_repository",
+)
 
 local_repository(
     name = "sbom_test_inputs",
