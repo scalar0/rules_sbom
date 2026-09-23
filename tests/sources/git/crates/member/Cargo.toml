@@ -1,4 +1,4 @@
 [package]
+license.workspace = true
 name = "fixture-dep"
 version.workspace = true
-license.workspace = true
