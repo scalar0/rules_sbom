@@ -162,7 +162,7 @@ genrule(
     name = "generated_lockfile",
     srcs = ["//tests/fixtures:Cargo.lock"],
     outs = ["generated/Cargo.lock"],
-    cmd = 'cp "$(location //tests/fixtures:Cargo.lock)" "$@"',
+    cmd = 'cp "$(execpath //tests/fixtures:Cargo.lock)" "$@"',
 )
 
 sbom(
@@ -190,7 +190,7 @@ genrule(
     name = "empty_lockfile",
     srcs = ["//tests/fixtures:empty.lock"],
     outs = ["empty/Cargo.lock"],
-    cmd = 'cp "$(location //tests/fixtures:empty.lock)" "$@"',
+    cmd = 'cp "$(execpath //tests/fixtures:empty.lock)" "$@"',
 )
 
 sbom(

@@ -7,9 +7,9 @@ bazel_dep(name = "platforms", version = "1.1.0")
 
 bazel_dep(name = "bazel_skylib", version = "1.9.2", dev_dependency = True)
 
-bazel_dep(name = "jq.bzl", version = "0.7.0")
+bazel_dep(name = "jq.bzl", version = "0.7.1")
 bazel_dep(name = "toml.bzl", version = "0.5.0")
-bazel_dep(name = "rules_python", version = "2.3.4")
+bazel_dep(name = "rules_python", version = "2.4.0")
 
 bazel_dep(name = "rules_uv", version = "0.89.2", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
@@ -65,4 +65,54 @@ local_repository(
     name = "sbom_test_inputs",
     dev_dependency = True,
     path = "tests/external",
+)
+
+bazel_dep(name = "bazel_lib", version = "3.7.2", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
+
+# Validation actions execute the pinned binary without a host shell launcher.
+buildifier_tools = use_extension("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_deps_extension", dev_dependency = True)
+use_repo(buildifier_tools, "buildifier_linux_amd64")
+
+bazel_dep(name = "aspect_rules_lint", version = "2.9.1", dev_dependency = True)
+bazel_dep(name = "aspect_rules_js", version = "3.5.1", dev_dependency = True)
+bazel_dep(name = "rules_nodejs", version = "6.7.6", dev_dependency = True)
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(node_version = "22.23.3")
+use_repo(node, "nodejs_toolchains")
+
+register_toolchains(
+    "@nodejs_toolchains//:all",
+    dev_dependency = True,
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "prettier",
+    build_file_content = '''load("@aspect_rules_js//js:defs.bzl", "js_binary")
+js_binary(
+    name = "prettier",
+    entry_point = "bin/prettier.cjs",
+    env = {"BAZEL_BINDIR": "."},
+    data = glob(["**"], exclude = ["BUILD.bazel"]),
+    visibility = ["//visibility:public"],
+)
+''',
+    dev_dependency = True,
+    integrity = "sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==",
+    strip_prefix = "package",
+    urls = ["https://registry.npmjs.org/prettier/-/prettier-3.6.2.tgz"],
+)
+
+# Older transitive Go rules use CcInfo, which Bazel 9 removed.
+bazel_dep(name = "rules_go", version = "0.64.1", dev_dependency = True, repo_name = None)
+
+# Documentation generation needs a pinned C++ compiler and linker.
+bazel_dep(name = "llvm", version = "0.8.24", dev_dependency = True)
+
+register_toolchains(
+    "@llvm//toolchain:all",
+    dev_dependency = True,
 )

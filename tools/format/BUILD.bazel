@@ -1,0 +1,24 @@
+load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
+
+format_multirun(
+    name = "format",
+    markdown = "@prettier//:prettier",
+    markdown_check_args = [
+        "--check",
+        "--prose-wrap",
+        "preserve",
+    ],
+    markdown_fix_args = [
+        "--write",
+        "--prose-wrap",
+        "preserve",
+    ],
+    starlark = "@buildifier_prebuilt//:buildifier",
+    starlark_check_args = [
+        "-config=off",
+        "-mode=check",
+        "-lint=warn",
+        "-warnings=all",
+    ],
+    visibility = ["//visibility:public"],
+)

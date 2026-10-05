@@ -1,4 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 
 bzl_library(
@@ -68,4 +69,22 @@ stardoc(
         ":http_sources",
         ":releases",
     ],
+)
+
+diff_test(
+    name = "rules_test",
+    file1 = "rules.md",
+    file2 = ":rules",
+)
+
+diff_test(
+    name = "toolchains_test",
+    file1 = "toolchains.md",
+    file2 = ":toolchains",
+)
+
+diff_test(
+    name = "extensions_test",
+    file1 = "extensions.md",
+    file2 = ":extensions",
 )

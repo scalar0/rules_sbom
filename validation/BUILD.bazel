@@ -1,0 +1,24 @@
+load("//validation:linters.bzl", "buildifier_test")
+
+filegroup(
+    name = "lint_config",
+    srcs = ["linters.bzl"],
+    tags = ["lint-with-buildifier"],
+)
+
+buildifier_test(
+    name = "buildifier_test",
+    srcs = [
+        "//validation:lint_config",
+    ],
+    tags = [
+        "manual",
+        "validation",
+    ],
+)
+
+test_suite(
+    name = "quick",
+    tests = [":buildifier_test"],
+    visibility = ["//visibility:public"],
+)

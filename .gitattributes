@@ -1,0 +1,9 @@
+vendor/** rules-lint-ignored
+bazel-*/** rules-lint-ignored
+**/target/** rules-lint-ignored
+**/node_modules/** rules-lint-ignored
+**/.venv/** rules-lint-ignored
+# Stardoc owns these files, including its final blank lines.
+docs/rules.md linguist-generated whitespace=-blank-at-eof
+docs/toolchains.md linguist-generated whitespace=-blank-at-eof
+docs/extensions.md linguist-generated whitespace=-blank-at-eof

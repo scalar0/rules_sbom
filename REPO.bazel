@@ -1,0 +1,9 @@
+"""Exclude generated directories and the independent consumer."""
+
+ignore_directories([
+    "**/bazel-*",
+    "**/target",
+    "**/node_modules",
+    "**/.venv",
+    "examples/basic",
+])

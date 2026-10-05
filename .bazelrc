@@ -1,2 +1,5 @@
 build --jobs=4
 test --test_output=errors
+
+# Keep dependency telemetry disabled for local builds.
+common --repo_env=ASPECT_TOOLS_TELEMETRY=-all
