@@ -3,7 +3,7 @@ set -euo pipefail
 module_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 fixture_root=$(mktemp -d "${TMPDIR:-/tmp}/rules-sbom-fetch.XXXXXXXX")
 cleanup() {
-    bazel --output_base="$fixture_root/output" shutdown >/dev/null 2>&1 || true
+    aspect shutdown --bazel-startup-flag="--output_base=$fixture_root/output" >/dev/null 2>&1 || true
     rm -rf "$fixture_root"
 }
 trap cleanup EXIT
@@ -73,8 +73,10 @@ use_repo(fixture, "licenses")
 EOF
 printf 'exports_files(["Cargo.lock"])\n' > BUILD.bazel
 cp "$module_root/.bazelversion" .bazelversion
-bazel --output_base="$fixture_root/output" build @licenses//:licenses --jobs=4 "$@"
-output=$(bazel --output_base="$fixture_root/output" cquery @licenses//:licenses --output=files "$@" 2>/dev/null)
+mkdir -p .aspect
+cp "$module_root/examples/basic/.aspect/"*.axl .aspect/
+aspect build --bazel-startup-flag="--output_base=$fixture_root/output" @licenses//:licenses --jobs=4 "$@"
+output=$(aspect cquery --bazel-startup-flag="--output_base=$fixture_root/output" -- @licenses//:licenses --output=files "$@" 2>/dev/null)
 jq -e --arg revision "$revision" '
   (.packages | length == 3) and
   ([.packages[] | select(.name | startswith("git-")) | .license.spdxExpression] == ["Apache-2.0", "Apache-2.0"]) and
@@ -84,7 +86,7 @@ jq -e --arg revision "$revision" '
 
 sed "s/$checksum/$(printf '%064d' 0)/" Cargo.lock > changed.lock
 mv changed.lock Cargo.lock
-if bazel --output_base="$fixture_root/output" build @licenses//:licenses --jobs=4 "$@" > checksum.log 2>&1; then
+if aspect build --bazel-startup-flag="--output_base=$fixture_root/output" @licenses//:licenses --jobs=4 "$@" > checksum.log 2>&1; then
     echo 'An archive checksum mismatch must fail.' >&2
     exit 1
 fi
@@ -93,7 +95,7 @@ assert_log 'checksum|sha256' checksum.log
 sed "s/$(printf '%064d' 0)/$(printf '%064d' 1)/" Cargo.lock > changed.lock
 mv changed.lock Cargo.lock
 mv fixture.crate unavailable.crate
-if bazel --output_base="$fixture_root/output" build @licenses//:licenses --jobs=4 "$@" > unavailable.log 2>&1; then
+if aspect build --bazel-startup-flag="--output_base=$fixture_root/output" @licenses//:licenses --jobs=4 "$@" > unavailable.log 2>&1; then
     echo 'An unavailable source archive must fail.' >&2
     exit 1
 fi
@@ -104,7 +106,7 @@ sed "s/$(printf '%064d' 1)/$checksum/" Cargo.lock > changed.lock
 mv changed.lock Cargo.lock
 sed "s/$revision/cccccccccccccccccccccccccccccccccccccccc/g" Cargo.lock > changed.lock
 mv changed.lock Cargo.lock
-if bazel --output_base="$fixture_root/output" build @licenses//:licenses --jobs=4 "$@" > missing-commit.log 2>&1; then
+if aspect build --bazel-startup-flag="--output_base=$fixture_root/output" @licenses//:licenses --jobs=4 "$@" > missing-commit.log 2>&1; then
     echo 'An unavailable locked Git commit must fail.' >&2
     exit 1
 fi

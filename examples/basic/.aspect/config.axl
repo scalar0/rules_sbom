@@ -1,0 +1,11 @@
+"""Compose independent consumer policies."""
+
+load("./features.axl", configure_features = "configure")
+
+def config(ctx):
+    """Apply the consumer feature policy.
+
+    Args:
+        ctx: The Aspect configuration context.
+    """
+    configure_features(ctx)

@@ -1,0 +1,24 @@
+"""Expose generic Bazel maintenance primitives through Aspect."""
+
+def _bazel_task(verb):
+    def _impl(ctx):
+        command = list(ctx.args.bazel_startup_flags) + [verb] + list(ctx.args.arguments)
+        return ctx.std.process.command("bazel").args(command).current_dir(
+            ctx.std.env.bazel_root_dir(),
+        ).env("ASPECT_WRAPPER_SKIP", "1").env("BAZELISK_SKIP_WRAPPER", "1").spawn().wait().code
+
+    return task(
+        implementation = _impl,
+        summary = "Run bazel " + verb + ".",
+        args = {
+            "arguments": args.trailing_var_args(description = "Bazel command arguments. Put them after --."),
+            "bazel_startup_flags": args.string_list(
+                long = "bazel-startup-flag",
+                description = "Bazel startup flag. Repeat for each flag. Use --bazel-startup-flag=VALUE.",
+            ),
+        },
+    )
+
+mod = _bazel_task("mod")
+cquery = _bazel_task("cquery")
+shutdown = _bazel_task("shutdown")

@@ -1,0 +1,34 @@
+"""Configure source format tasks from tools/format."""
+
+load("@aspect//format.axl", _format = "format")
+
+buildifier = _format.alias(
+    defaults = {
+        "formatter_target": "//tools/format:format_Starlark_with_buildifier",
+        "upload_format_diff": False,
+    },
+    summary = "Format Starlark files with Buildifier.",
+)
+
+def _format_task(check):
+    return _format.alias(
+        defaults = {
+            "formatter_target": "//tools/format:format.check" if check else "//tools/format:format",
+            "scope": "all" if check else "changed",
+            "severity": "fail" if check else "info",
+            "upload_format_diff": False,
+        },
+        summary = "Check source formats without changes." if check else "Format source files.",
+    )
+
+format_sources = _format_task(False)
+format_check = _format_task(True)
+
+def configure(ctx):
+    """Set defaults for the built-in format task.
+
+    Args:
+        ctx: The Aspect configuration context.
+    """
+    ctx.tasks["format"].args.formatter_target = "//tools/format"
+    ctx.tasks["format"].args.upload_format_diff = False

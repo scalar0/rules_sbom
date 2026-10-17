@@ -1,0 +1,36 @@
+"""Disable remote features and telemetry."""
+
+load("@aspect//feature/artifacts.axl", "ArtifactUpload")
+load("@aspect//feature/buildkite_annotations.axl", "BuildkiteAnnotations")
+load("@aspect//feature/circleci_test_results.axl", "CircleCITestResults")
+load("@aspect//feature/deployment.axl", "Deployment")
+load("@aspect//feature/github_lint_comments.axl", "GithubLintComments")
+load("@aspect//feature/github_status_checks.axl", "GithubStatusChecks")
+load("@aspect//feature/github_status_comments.axl", "GithubStatusComments")
+load("@aspect//feature/gitlab_commit_statuses.axl", "GitlabCommitStatuses")
+load("@aspect//feature/gitlab_lint_comments.axl", "GitlabLintComments")
+load("@aspect//feature/gitlab_status_comments.axl", "GitlabStatusComments")
+load("@aspect//feature/telemetry.axl", "Telemetry")
+load("@aspect//feature/workflows.axl", "Workflows")
+
+def configure(ctx):
+    """Apply the local feature policy.
+
+    Args:
+        ctx: The Aspect configuration context.
+    """
+    for feature in [
+        ArtifactUpload,
+        BuildkiteAnnotations,
+        CircleCITestResults,
+        Deployment,
+        GithubLintComments,
+        GithubStatusChecks,
+        GithubStatusComments,
+        GitlabCommitStatuses,
+        GitlabLintComments,
+        GitlabStatusComments,
+        Telemetry,
+        Workflows,
+    ]:
+        ctx.features[feature].enabled = False

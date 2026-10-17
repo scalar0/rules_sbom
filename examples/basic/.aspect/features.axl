@@ -1,0 +1,13 @@
+"""Keep independent consumer builds local."""
+
+load("@aspect//feature/telemetry.axl", "Telemetry")
+load("@aspect//feature/workflows.axl", "Workflows")
+
+def configure(ctx):
+    """Disable consumer telemetry and workflows.
+
+    Args:
+        ctx: The Aspect configuration context.
+    """
+    ctx.features[Telemetry].enabled = False
+    ctx.features[Workflows].enabled = False

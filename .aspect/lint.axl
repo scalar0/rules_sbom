@@ -1,0 +1,10 @@
+"""Configure source lint tasks and required checks."""
+
+def configure(ctx):
+    """Set defaults for the built-in lint task.
+
+    Args:
+        ctx: The Aspect configuration context.
+    """
+    ctx.tasks["lint"].args.strategy = "hard"
+    ctx.tasks["lint"].args.aspects = ["//validation:linters.bzl%buildifier"]

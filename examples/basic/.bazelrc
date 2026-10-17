@@ -1,2 +1,5 @@
+# Reject lockfile changes unless a command explicitly requests updates.
+common --lockfile_mode=error
+
 build --jobs=4
 test --test_output=errors
