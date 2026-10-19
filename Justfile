@@ -9,6 +9,7 @@ default:
 test *bazel_args:
     aspect test //tests/... "$@"
     SBOM_HOST_MARKER=must-not-leak SYFT_CONFIG=/outside/config.yaml aspect test --action_env=SBOM_HOST_MARKER --action_env=SYFT_CONFIG --extra_toolchains=//tests:fake_toolchain //tests:override_test "$@"
+    SBOM_HOST_MARKER=must-not-leak SYFT_CONFIG=/outside/config.yaml aspect test --action_env=SBOM_HOST_MARKER --action_env=SYFT_CONFIG --extra_toolchains=//tests:fake_toolchain --define=RULES_SBOM_REFRESH_KEY=test-refresh //tests:online_override_test "$@"
     bash tests/failures.sh "$@"
     # Repository tests create and change their entire workspace in a temporary directory.
     bash tests/repositories.sh "$@" --lockfile_mode=update

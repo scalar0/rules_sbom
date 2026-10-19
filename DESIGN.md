@@ -16,7 +16,7 @@ flowchart LR
 | [Rule](private/rules.bzl)             | Check input contracts, declare outputs, and select the execution toolchain. |
 | [Scan script](private/scan.sh)        | Copy inputs, isolate scratch directories, and run one Syft scan.            |
 | [Settings](private/settings.bzl)      | Define output extensions and rule-owned Syft environment overrides.         |
-| [Release data](private/releases.bzl)  | Define the version, checksums, and platform constraints.                    |
+| [Release data](private/releases.bzl)  | Define the version and platform constraints.                                |
 | [Module extension](extensions.bzl)    | Download the pinned release archives.                                       |
 | [Toolchain](toolchains/toolchain.bzl) | Supply the executable and its runfiles.                                     |
 
@@ -28,10 +28,17 @@ Duplicate scan paths fail during analysis.
 The action uses a clean environment and always passes `--config`.
 Without a supplied configuration, the rule writes an empty YAML file.
 CLI arguments control the source, scan root, and output paths.
-Environment overrides disable Syft 1.46.0 network enrichment and local dependency-cache searches.
+Environment overrides disable local dependency-cache searches.
+By default, they also disable Syft network enrichment, and the CLI passes `--enrich none`.
+With `allow_network = True`, the Syft configuration controls network enrichment.
+Both direct scans and Cargo-enriched scans use this policy.
 These overrides also disable update checks, caching, profiles, template paths, and extra log files.
 The process receives scratch-local user, temporary, and XDG directories.
-Bazel network blocking supplements these controls when the execution strategy supports it.
+Offline actions request Bazel network blocking where the execution strategy supports it.
+Online actions request network access and disable local and remote spawn caches.
+The online action environment includes the `RULES_SBOM_REFRESH_KEY` build variable.
+A new value changes the action key and prevents reuse from Bazel's persistent action cache.
+Offline actions omit this variable.
 
 The output group name equals the requested format string, including its version selector.
 Each output path is `<target>/<format><extension>`.
@@ -92,7 +99,8 @@ Ordinary scan actions do not include jq or the enrichment filter as inputs.
 
 The metadata format is internal and versioned.
 Consumers use the generated target rather than construct metadata files.
-Downloads happen before build actions, and all validation and SBOM actions remain offline.
+Cargo source downloads happen before build actions.
+Cargo metadata validation remains offline, including when the SBOM scan permits network enrichment.
 
 ## Custom toolchains
 
@@ -123,7 +131,7 @@ Test these controls before selecting another Syft version.
 
 The tests cover combined scans, output groups, configuration overrides, generated inputs, external inputs, and undeclared adjacent files.
 Analysis tests cover input errors and toolchain selection for all four platforms.
-A custom executable checks action isolation and declared tool runfiles.
+A custom executable checks action isolation, declared tool runfiles, and network policy for direct and Cargo-enriched scans.
 Failure checks verify native format errors and custom executable exit status.
 The independent consumer checks Bzlmod use without development dependencies.
 Python tests cover manifest errors, workspace inheritance, and SPDX expressions.

@@ -1,7 +1,6 @@
 # rules_sbom
 
 Generate SBOMs from declared lockfiles with the Syft binary.
-The module pins Syft 1.46.0 and supports Linux and macOS on x86_64 and arm64.
 
 ```starlark
 load("@rules_sbom//:defs.bzl", "sbom")
@@ -23,6 +22,7 @@ The [independent example](examples/basic/MODULE.bazel) uses a local module overr
 | `lockfiles`      | Required, nonempty list of labels. Each label supplies one file.                        |
 | `formats`        | Required, nonempty list of native Syft formats. Version selectors are optional.         |
 | `config`         | Optional Syft configuration file. Rule-owned settings take precedence.                  |
+| `allow_network`  | Permit network enrichment from the configuration. The default is `False`.               |
 | `cargo_licenses` | Optional list of validated Cargo license metadata labels. Each label supplies one file. |
 
 Source files, generated files, and external repository files can supply lockfiles.
@@ -125,12 +125,19 @@ It does not copy adjacent workspace files.
 
 The action always passes an explicit configuration file and ignores host configuration.
 A supplied configuration can select catalogers, exclude inputs, and set document metadata.
-The rule overrides source selection, scan paths, output paths, network enrichment, and local dependency-cache searches.
+The rule overrides source selection, scan paths, output paths, and local dependency-cache searches.
 It also disables update checks, Syft caching, extra log files, profiles, and template paths.
 User and temporary directories belong to the action.
-The action requests Bazel network blocking where the execution strategy supports it.
+By default, the rule disables network enrichment and requests Bazel network blocking where the execution strategy supports it.
+Set `allow_network = True` to permit network enrichment from the configuration.
+For example, enable `javascript.search-remote-licenses` or `python.search-remote-licenses` in the configuration to request registry license data.
+The rule then requests network access and disables local and remote spawn caches.
+Bazel can still reuse an unchanged action from its persistent action cache.
+For a fresh lookup, build with a new value for `--define=RULES_SBOM_REFRESH_KEY=<value>`.
+The rule includes this value in the online action environment.
+Offline actions ignore this value.
+Registry results can change between scans, and Syft can leave unavailable license data unresolved.
 
-Custom toolchains must support the same CLI and configuration controls as Syft 1.46.0.
 See the [toolchain API](docs/toolchains.md) and [design](DESIGN.md).
 The [API index](docs/README.md) lists the generated reference pages.
 

@@ -4,8 +4,13 @@ set -euo pipefail
 exec_root=$PWD
 syft_binary="$exec_root/$1"
 syft_config="$exec_root/$2"
-metadata_count=$3
-shift 3
+allow_network=$3
+metadata_count=$4
+shift 4
+enrichment_args=()
+if [[ $allow_network == false ]]; then
+    enrichment_args=(--enrich none)
+fi
 metadata=()
 if ((metadata_count > 0)); then
     jq_binary="$exec_root/$1"
@@ -44,10 +49,10 @@ export XDG_CACHE_HOME="$scan_scratch/cache" XDG_CONFIG_HOME="$scan_scratch/confi
 
 if ((metadata_count == 0)); then
     "$syft_binary" scan "$scan_root" --config "$syft_config" \
-        --from dir --base-path "$scan_root" --enrich none "${outputs[@]}"
+        --from dir --base-path "$scan_root" "${enrichment_args[@]}" "${outputs[@]}"
 else
     SYFT_FORMAT_JSON_LEGACY=false "$syft_binary" scan "$scan_root" --config "$syft_config" \
-        --from dir --base-path "$scan_root" --enrich none \
+        --from dir --base-path "$scan_root" "${enrichment_args[@]}" \
         --output "syft-json=$scan_scratch/raw.json"
     "$jq_binary" --slurp -f "$enrich_filter" \
         "$scan_scratch/raw.json" "${metadata[@]}" > "$scan_scratch/enriched.json"

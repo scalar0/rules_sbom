@@ -1,4 +1,4 @@
-"""Output extensions and rule-owned configuration for Syft 1.46.0."""
+"""Output extensions and rule-owned Syft configuration."""
 
 # Syft ignores hyphens and underscores when it matches format names and aliases.
 FORMAT_EXTENSIONS = {
@@ -33,12 +33,15 @@ SYFT_ENV = {
     "SYFT_FORMAT_TEMPLATE_PATH": "",
     "SYFT_GOLANG_SEARCH_LOCAL_MOD_CACHE_LICENSES": "false",
     "SYFT_GOLANG_SEARCH_LOCAL_VENDOR_LICENSES": "false",
-    "SYFT_GOLANG_SEARCH_REMOTE_LICENSES": "false",
     "SYFT_GOLANG_USE_PACKAGES_LIB": "false",
+    "SYFT_JAVA_USE_MAVEN_LOCAL_REPOSITORY": "false",
+    "SYFT_LOG_FILE": "",
+}
+
+SYFT_OFFLINE_ENV = {
+    "SYFT_GOLANG_SEARCH_REMOTE_LICENSES": "false",
     "SYFT_JAVASCRIPT_SEARCH_REMOTE_LICENSES": "false",
     "SYFT_JAVA_RESOLVE_TRANSITIVE_DEPENDENCIES": "false",
-    "SYFT_JAVA_USE_MAVEN_LOCAL_REPOSITORY": "false",
     "SYFT_JAVA_USE_NETWORK": "false",
-    "SYFT_LOG_FILE": "",
     "SYFT_PYTHON_SEARCH_REMOTE_LICENSES": "false",
 }

@@ -7,7 +7,7 @@ load("//private:releases.bzl", "SYFT_RELEASES", "SYFT_VERSION")
 cargo = _cargo
 
 def _syft_impl(module_ctx):
-    for platform, release in SYFT_RELEASES.items():
+    for platform in SYFT_RELEASES:
         http_archive(
             name = "syft_" + platform,
             urls = [
@@ -16,12 +16,11 @@ def _syft_impl(module_ctx):
                     platform,
                 ),
             ],
-            sha256 = release.sha256,
             build_file_content = 'exports_files(["syft"], visibility = ["//visibility:public"])\n',
         )
     return module_ctx.extension_metadata(reproducible = True)
 
 syft = module_extension(
     implementation = _syft_impl,
-    doc = "Download Syft 1.46.0 for Linux and macOS on x86_64 and arm64.",
+    doc = "Download Syft {} for Linux and macOS on x86_64 and arm64.".format(SYFT_VERSION),
 )

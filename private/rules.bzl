@@ -1,7 +1,7 @@
 """Scan declared lockfiles with the Syft executable."""
 
 load("@jq.bzl//jq/toolchain:toolchain.bzl", "TOOLCHAIN_TYPE")
-load(":settings.bzl", "FORMAT_EXTENSIONS", "SYFT_ENV")
+load(":settings.bzl", "FORMAT_EXTENSIONS", "SYFT_ENV", "SYFT_OFFLINE_ENV")
 
 _TOOLCHAIN = "//toolchains:type"
 _FORMAT_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789-_.@"
@@ -62,6 +62,7 @@ def _sbom_impl(ctx):
     args = ctx.actions.args()
     args.add(toolchain.syft)
     args.add(config)
+    args.add("true" if ctx.attr.allow_network else "false")
     args.add(len(metadata))
     enrichment_inputs = []
     if metadata:
@@ -78,15 +79,23 @@ def _sbom_impl(ctx):
         args.add(format)
         args.add(output)
 
+    env = dict(SYFT_ENV)
+    if ctx.attr.allow_network:
+        env["RULES_SBOM_REFRESH_KEY"] = ctx.var.get("RULES_SBOM_REFRESH_KEY", "")
+        execution_requirements = {"no-cache": "1", "requires-network": "1"}
+    else:
+        env.update(SYFT_OFFLINE_ENV)
+        execution_requirements = {"block-network": "1"}
+
     ctx.actions.run(
         executable = ctx.file._runner,
         arguments = [args],
         inputs = inputs + enrichment_inputs + [config, toolchain.syft],
         tools = [toolchain.files_to_run],
         outputs = outputs.values(),
-        env = SYFT_ENV,
+        env = env,
         use_default_shell_env = False,
-        execution_requirements = {"block-network": "1"},
+        execution_requirements = execution_requirements,
         mnemonic = "SbomScan",
         progress_message = "Scan lockfiles for %{label}",
     )
@@ -98,13 +107,39 @@ def _sbom_impl(ctx):
 sbom = rule(
     implementation = _sbom_impl,
     attrs = {
-        "cargo_licenses": attr.label_list(allow_files = [".json"], doc = "Optional validated Cargo license metadata labels. A nonempty list enables offline enrichment."),
-        "config": attr.label(allow_single_file = True, doc = "Optional Syft configuration with lower priority than rule-owned input, output, and offline settings."),
-        "formats": attr.string_list(mandatory = True, doc = "Nonempty list of native Syft formats, such as syft-json or spdx-json@3.0."),
-        "lockfiles": attr.label_list(allow_files = True, mandatory = True, doc = "Nonempty list of file labels with one lockfile per label."),
-        "_enrich": attr.label(default = Label("//private:enrich.jq"), allow_single_file = True),
-        "_runner": attr.label(default = Label("//private:scan.sh"), allow_single_file = True),
+        "allow_network": attr.bool(
+            default = False,
+            doc = "Permit network enrichment from the Syft configuration. Disable spawn caching. RULES_SBOM_REFRESH_KEY changes the online action key.",
+        ),
+        "cargo_licenses": attr.label_list(
+            allow_files = [".json"],
+            doc = "Optional validated Cargo license metadata labels. A nonempty list enables offline enrichment.",
+        ),
+        "config": attr.label(
+            allow_single_file = True,
+            doc = "Optional Syft configuration with lower priority than rule-owned input, output, and offline settings.",
+        ),
+        "formats": attr.string_list(
+            mandatory = True,
+            doc = "Nonempty list of native Syft formats, such as syft-json or spdx-json@3.0.",
+        ),
+        "lockfiles": attr.label_list(
+            allow_files = True,
+            mandatory = True,
+            doc = "Nonempty list of file labels with one lockfile per label.",
+        ),
+        "_enrich": attr.label(
+            default = Label("//private:enrich.jq"),
+            allow_single_file = True,
+        ),
+        "_runner": attr.label(
+            default = Label("//private:scan.sh"),
+            allow_single_file = True,
+        ),
     },
-    toolchains = [_TOOLCHAIN, TOOLCHAIN_TYPE],
+    toolchains = [
+        _TOOLCHAIN,
+        TOOLCHAIN_TYPE,
+    ],
     doc = "Scan declared lockfiles together.\nReturn native files through DefaultInfo and one output group per format.",
 )

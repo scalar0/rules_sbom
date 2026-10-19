@@ -36,7 +36,7 @@ Fetch crates.io and public HTTPS Git license evidence from source Cargo.lock fil
 syft = use_extension("@rules_sbom//:extensions.bzl", "syft")
 </pre>
 
-Download Syft 1.46.0 for Linux and macOS on x86_64 and arm64.
+Download Syft 1.54.1 for Linux and macOS on x86_64 and arm64.
 
 
 

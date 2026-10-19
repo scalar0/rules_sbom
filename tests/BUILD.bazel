@@ -265,3 +265,32 @@ sbom(
     lockfiles = ["//tests/fixtures:Cargo.lock"],
     tags = ["manual"],
 )
+
+sbom(
+    name = "online_override",
+    allow_network = True,
+    config = "//tests/fixtures:config.yaml",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+    tags = ["manual"],
+)
+
+sbom(
+    name = "online_enriched_override",
+    allow_network = True,
+    cargo_licenses = ["@cargo_fixture_licenses//:licenses"],
+    config = "//tests/fixtures:config.yaml",
+    formats = ["syft-json"],
+    lockfiles = ["//tests/fixtures:Cargo.lock"],
+    tags = ["manual"],
+)
+
+json_test(
+    name = "online_override_test",
+    srcs = [
+        ":online_enriched_override",
+        ":online_override",
+    ],
+    filter = "online_override.jq",
+    tags = ["manual"],
+)
